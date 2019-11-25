@@ -1,0 +1,4 @@
+/index.html
+    Link: </styles.css>; rel=prefetch; as=style
+    Link: </normilize.css>; rel=prefetch; as=style
+    Link: </script.js>; rel=preload; as=script
