@@ -30,8 +30,10 @@ class Note extends Component {
     }
 
     async componentDidUpdate(nextProps) {
-        if (nextProps.id != this.props.id)
+        if (nextProps.id != this.props.id) {
             this.setHtml(this.props.id);
+            window.scrollTo(0, 0);
+        }
     }
 
     render() {
