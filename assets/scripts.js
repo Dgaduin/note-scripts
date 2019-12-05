@@ -19,7 +19,7 @@ const fetchMetadata = async() => {
     return data;
 }
 
-class Note1 extends Component {
+class NoteScrollableContainer extends Component {
     ref = createRef();
 
     async componentDidMount() {
@@ -33,7 +33,31 @@ class Note1 extends Component {
     }
 
     render() {
-        return html `<div id="main" data-simplebar data-simplebar-auto-hide="false"><${Note} ...${this.props} /></div>`;
+        return html `
+        <div id="main" data-simplebar data-simplebar-auto-hide="false">
+            <${Note} ...${this.props} />
+        </div>`;
+    }
+}
+
+class SearchScrollableContainer extends Component {
+    ref = createRef();
+
+    async componentDidMount() {
+        if (this.ref.current) {
+            this.setState({ scroll: new SimpleBar(this.ref.current) })
+        }
+    }
+
+    async componentDidUpdate(nextProps) {
+        scroll.recalculate();
+    }
+
+    render() {
+        return html `
+        <div id="main" data-simplebar data-simplebar-auto-hide="false">
+            <${SearchResults} ...${this.props} />
+        </div>`;
     }
 }
 
@@ -95,40 +119,38 @@ class SearchResults extends Component {
         const list = this.state.results.map(result => {
             const note = metadata.notes.find(x => x.name == result)
             return html `
-            <div lass="searchResult">
-                <a href="/note/${result}/${this.props.query}">${note.header}</a>
+            <div class="searchResult">
+                <a href="#/note/${result}/${this.props.query}">${note.header}</a>
             </div>`;
         });
         return html `
-        <div id="main" data-simplebar data-simplebar-auto-hide="false">
-        <h1>Search results for "${this.props.query}"</h1>
-            ${list}
-        </div>`
+            <div>
+                <h1>Search results for "${this.props.query}"</h1>
+                ${list}
+            </div>`
     }
 }
 
 const NotesCollection = ({ metadata }) =>
     metadata.notes.map(note => {
         const { name, header } = note;
-        return html `
-        <li>
-            <a href="/note/${name}">${header}</a>
-        </li>`;
+        return html ` 
+            <li >
+                <a href="#/note/${name}"> ${header} </a> 
+            </li > `;
     });
 
 const Sidebar = ({ metadata }) => {
     return html `
-        <nav id="sidebar" >
+        <nav id="sidebar">
             <header>
                 <h2>
-                    <a href="/">
-                        Notes
-                    </a>
-                </h2>
+                    <a href="/">Notes</a> 
+                </h2> 
             </header>
-            <ul data-simplebar>
-                <${NotesCollection} ...${{ metadata }}/>
-            </ul>
+            <ul data-simplebar >
+                <${NotesCollection}...${{ metadata }}/>
+            </ul> 
         </nav> `;
 }
 
@@ -149,13 +171,13 @@ const App = (metadata) => {
     const routerProps = { history: createHashHistory() };
 
     return html `
-        <${Fragment}>
-            <${Sidebar} ...${metadata} />
+        <${Fragment}>            
             <${Router} ...${routerProps} >
-                <${Home} ...${{ default: true, path: "/" }} /> 
-                <${Note1} ...${{ path: "/note/:id/:query?" }} />
-                <${SearchResults} ...${{ path: "/search/:query" }} />              
-            <//>             
+                <${Home} ...${{ default: true }} /> 
+                <${NoteScrollableContainer} ...${{ path: "/note/:id/:query?" }} />
+                <${SearchScrollableContainer} ...${{ path: "/search/:query" }} />              
+            <//>     
+            <${Sidebar} ...${metadata} />        
         <//>
     `;
 };
@@ -169,6 +191,6 @@ fetchMetadata()
     .then((data) => {
         metadata = data;
         render(
-            html `<${App} ...${{ metadata: data }} />`,
+            html `<${App} ...${{ metadata: data }}/>`,
             document.body)
     });

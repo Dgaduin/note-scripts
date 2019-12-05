@@ -1,27 +1,42 @@
-@import url('https://fonts.googleapis.com/css?family=Merriweather|Roboto+Mono|Solway&display=swap');
+@import url(https://fonts.googleapis.com/css?family=Merriweather|Roboto+Mono|Solway&display=swap);
 :root {
-    --code-bg-color: #fff9f3;
-    --code-fg-color: #0063a3;
+    --bg-color: rgb(214, 192, 170);
+    --dark-blue: rgba(0, 99, 163, 1);
+    --light-blue: rgba(0, 147, 255, 1);
+    --orange: rgba(255, 155, 84, 1);
+    --redish: rgba(223, 134, 148, 1);
+    --light-orange: rgba(255, 196, 175, 1);
 }
 
 html {
-    font-size: 16px;
+    font-size: 16px
 }
 
-p,
 a,
-li {
-    font-family: 'Merriweather', serif;
+li,
+p {
+    font-family: 'Merriweather', serif
 }
 
+li,
 p {
     line-height: 1.8rem;
     font-size: 1rem;
 }
 
-p a {
+a {
     text-decoration: none;
-    color: rgb(0, 147, 255);
+    color: var(--light-blue);
+    padding-right: 15px;
+}
+
+a:after {
+    content: " \21AA";
+}
+
+li a:visited:after,
+a:visited:after {
+    color: var(--redish);
 }
 
 h1,
@@ -32,8 +47,8 @@ h5,
 h6,
 header h2 a {
     font-family: 'Solway', serif;
-    text-decoration: underline 4px;
-    color: var( --code-fg-color);
+    text-decoration: underline 4px var(--orange);
+    color: var(--dark-blue);
 }
 
 article {
@@ -41,27 +56,16 @@ article {
 }
 
 li {
-    font-size: 1rem;
     line-height: 2.2rem;
 }
 
 li a {
     color: black;
-    text-decoration: none;
-    transition: all .5s ease-in;
 }
 
-li a:after {
-    content: '';
-    width: 0px;
-    height: 1px;
-    display: block;
-    background: black;
-    transition: 300ms;
-}
-
-li a:hover:after {
-    width: 100%;
+p code,
+pre {
+    background-color: var(--bg-color);
 }
 
 pre {
@@ -69,51 +73,73 @@ pre {
     overflow: auto;
     font-size: 85%;
     line-height: 1.2;
-    background-color: var(--code-bg-color);
 }
 
 p code {
-    padding: 5px 7px 5px 7px;
-    background-color: var(--code-bg-color);
-    font-size: 0.8rem;
+    padding: 5px 7px;
+    font-size: .8rem;
 }
 
 code {
     font-family: 'Roboto Mono';
-    color: var(--code-fg-color);
+    color: var(--dark-blue);
 }
 
-#main {
-    padding-left: 15px;
-    padding-right: 15px;
+mark {
+    background-color: var(--redish);
+    padding: 3px;
 }
 
+blockquote {
+    padding: 0 1em;
+    color: var(--dark-blue);
+    background-color: var(--bg-color);
+    border-left: .25em solid var(--redish);
+}
+
+.simplebar-track.simplebar-vertical {
+    background-color: var(--bg-color);
+}
+
+.simplebar-track.simplebar-vertical .simplebar-scrollbar::before {
+    top: 2px;
+    bottom: 2px;
+    background: var(--dark-blue);
+}
+
+.searchResult {
+    padding: 10px 5px;
+}
+
+#main,
 #sidebar {
-    padding-top: 15px;
     padding-left: 15px;
     padding-right: 15px;
 }
 
-@media (min-width: 40em) {
+#sidebar header {
+    padding: 5px 0 15px 0;
+    border-bottom: 1px solid var(--dark-blue);
+}
+
+#sidebar h2 {
+    margin: 0;
+}
+
+@media (min-width:40em) {
     #main {
         width: 70%;
         float: right;
-        height: calc(100vh - 28px);
+        height: calc(100vh - 45px);
         overflow: auto;
-    }
-    #main {
-        padding-left: 15px;
-        padding-right: 15px;
         padding-bottom: 20px;
     }
     #sidebar {
         width: 25%;
         float: left;
-        padding-left: 15px;
-        padding-right: 15px;
     }
     #sidebar ul {
-        height: calc(100vh - 115px);
+        height: calc(100vh - 101px);
         overflow: auto;
         padding-left: 25px;
         padding-right: 15px;
