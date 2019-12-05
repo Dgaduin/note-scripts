@@ -8,12 +8,12 @@ const { createHashHistory } = History;
 const index = new FlexSearch();
 let metadata;
 
-const fetchIndex = async () => {
+const fetchIndex = async() => {
     const url = '/searchIndex.json';
     const data = await (await fetch(url)).text();
     return data;
 }
-const fetchMetadata = async () => {
+const fetchMetadata = async() => {
     const url = '/metadata.json';
     const data = await (await fetch(url)).json();
     return data;
@@ -33,7 +33,7 @@ class Note1 extends Component {
     }
 
     render() {
-        return html`<div id="main" data-simplebar data-simplebar-auto-hide="false"><${Note} ...${this.props} /></div>`;
+        return html `<div id="main" data-simplebar data-simplebar-auto-hide="false"><${Note} ...${this.props} /></div>`;
     }
 }
 
@@ -69,7 +69,7 @@ class Note extends Component {
             dangerouslySetInnerHTML: { __html: page }
         };
         console.log(internalProps);
-        return html`<div ...${internalProps}/>`;
+        return html `<article ...${internalProps}/>`;
     }
 }
 
@@ -94,12 +94,12 @@ class SearchResults extends Component {
     render() {
         const list = this.state.results.map(result => {
             const note = metadata.notes.find(x => x.name == result)
-            return html`
+            return html `
             <div lass="searchResult">
                 <a href="/note/${result}/${this.props.query}">${note.header}</a>
             </div>`;
         });
-        return html`
+        return html `
         <div id="main" data-simplebar data-simplebar-auto-hide="false">
         <h1>Search results for "${this.props.query}"</h1>
             ${list}
@@ -110,14 +110,14 @@ class SearchResults extends Component {
 const NotesCollection = ({ metadata }) =>
     metadata.notes.map(note => {
         const { name, header } = note;
-        return html`
+        return html `
         <li>
             <a href="/note/${name}">${header}</a>
         </li>`;
     });
 
 const Sidebar = ({ metadata }) => {
-    return html`
+    return html `
         <nav id="sidebar" >
             <header>
                 <h2>
@@ -133,7 +133,7 @@ const Sidebar = ({ metadata }) => {
 }
 
 const Home = () =>
-    html`<div id="main" data-simplebar data-simplebar-auto-hide="false">
+    html `<div id="main" data-simplebar data-simplebar-auto-hide="false">
                 <h1>Welcome</h1>
                 <p>These are my notes</p>
                 <p>Source and build steps can be found at <a href="https://github.com/Dgaduin/note-scripts">GitHub</a></p>
@@ -148,7 +148,7 @@ const Home = () =>
 const App = (metadata) => {
     const routerProps = { history: createHashHistory() };
 
-    return html`
+    return html `
         <${Fragment}>
             <${Sidebar} ...${metadata} />
             <${Router} ...${routerProps} >
@@ -169,6 +169,6 @@ fetchMetadata()
     .then((data) => {
         metadata = data;
         render(
-            html`<${App} ...${{ metadata: data }} />`,
+            html `<${App} ...${{ metadata: data }} />`,
             document.body)
     });
