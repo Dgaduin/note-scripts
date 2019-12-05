@@ -1,5 +1,5 @@
 import htm from 'https://unpkg.com/htm?module';
-import { h, render, Component } from 'https://unpkg.com/preact?module';
+import { h, render, Component, Fragment, createRef } from 'https://unpkg.com/preact?module';
 import Router from 'https://unpkg.com/preact-router?module';
 
 const html = htm.bind(h);
@@ -19,6 +19,24 @@ const fetchMetadata = async () => {
     return data;
 }
 
+class Note1 extends Component {
+    ref = createRef();
+
+    async componentDidMount() {
+        if (this.ref.current) {
+            this.setState({ scroll: new SimpleBar(this.ref.current) })
+        }
+    }
+
+    async componentDidUpdate(nextProps) {
+        scroll.recalculate();
+    }
+
+    render() {
+        return html`<div id="main" data-simplebar data-simplebar-auto-hide="false"><${Note} ...${this.props} /></div>`;
+    }
+}
+
 class Note extends Component {
     async setHtml(id) {
         const html = await fetch(`/${id}.html`).then(res => res.text());
@@ -32,7 +50,6 @@ class Note extends Component {
     async componentDidUpdate(nextProps) {
         if (nextProps.id != this.props.id) {
             this.setHtml(this.props.id);
-            window.scrollTo(0, 0);
         }
     }
 
@@ -51,8 +68,8 @@ class Note extends Component {
         const internalProps = {
             dangerouslySetInnerHTML: { __html: page }
         };
-
-        return html`<article id="main" ...${internalProps} /> `;
+        console.log(internalProps);
+        return html`<div ...${internalProps}/>`;
     }
 }
 
@@ -83,10 +100,10 @@ class SearchResults extends Component {
             </div>`;
         });
         return html`
-        <article id="main">
+        <div id="main" data-simplebar data-simplebar-auto-hide="false">
         <h1>Search results for "${this.props.query}"</h1>
             ${list}
-        </article>`
+        </div>`
     }
 }
 
@@ -101,7 +118,7 @@ const NotesCollection = ({ metadata }) =>
 
 const Sidebar = ({ metadata }) => {
     return html`
-        <nav id="sidebar">
+        <nav id="sidebar" >
             <header>
                 <h2>
                     <a href="/">
@@ -109,14 +126,14 @@ const Sidebar = ({ metadata }) => {
                     </a>
                 </h2>
             </header>
-            <ul>
+            <ul data-simplebar>
                 <${NotesCollection} ...${{ metadata }}/>
             </ul>
         </nav> `;
 }
 
 const Home = () =>
-    html`<article id="main" >
+    html`<div id="main" data-simplebar data-simplebar-auto-hide="false">
                 <h1>Welcome</h1>
                 <p>These are my notes</p>
                 <p>Source and build steps can be found at <a href="https://github.com/Dgaduin/note-scripts">GitHub</a></p>
@@ -125,21 +142,21 @@ const Home = () =>
                         <img src="https://camo.githubusercontent.com/a060d3a8d7d75179c23fb1d0da8958a4221046f7/68747470733a2f2f6170692e6e65746c6966792e636f6d2f6170692f76312f6261646765732f36663839636564302d633335352d343539342d623338622d3233363135653737313665322f6465706c6f792d737461747573" alt="Netlify Status" data-canonical-src="https://api.netlify.com/api/v1/badges/6f89ced0-c355-4594-b38b-23615e7716e2/deploy-status" style="max-width:100%;"></img>
                     </a>
                 </p>
-        </article > `;
+        </div > `;
 
 
 const App = (metadata) => {
     const routerProps = { history: createHashHistory() };
 
     return html`
-        <div id="root" >
-        <${Router} ...${routerProps} >
-            <${Home} ...${{ default: true, path: "/" }} /> 
-            <${Note} ...${{ path: "/note/:id/:query?" }} />
-            <${SearchResults} ...${{ path: "/search/:query" }} />              
-        <//>     
-    <${Sidebar} ...${metadata} />
-    </div >
+        <${Fragment}>
+            <${Sidebar} ...${metadata} />
+            <${Router} ...${routerProps} >
+                <${Home} ...${{ default: true, path: "/" }} /> 
+                <${Note1} ...${{ path: "/note/:id/:query?" }} />
+                <${SearchResults} ...${{ path: "/search/:query" }} />              
+            <//>             
+        <//>
     `;
 };
 

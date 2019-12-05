@@ -15,50 +15,12 @@
     <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
     $endif$
     <title>$if(title-prefix)$$title-prefix$ ÔÇô $endif$$pagetitle$</title>
-    <style>
-        code {
-            white-space: pre-wrap;
-        }
-
-        span.smallcaps {
-            font-variant: small-caps;
-        }
-
-        span.underline {
-            text-decoration: underline;
-        }
-
-        div.column {
-            display: inline-block;
-            vertical-align: top;
-            width: 50%;
-        }
-
-        $if(quotes)$ q {
-            quotes: "ÔÇ£""ÔÇØ""ÔÇÿ""ÔÇÖ";
-        }
-
-        $endif$
-    </style>
-    $if(highlighting-css)$
-    <style>
-        $highlighting-css$
-    </style>
     $endif$
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/normalize.css" />
     $for(css)$
     <link rel="stylesheet" href="$css$" />
-    $endfor$
-    $if(math)$
-    $math$
-    $endif$
-    <!--[if lt IE 9]>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
-  <![endif]-->
-    $for(header-includes)$
-    $header-includes$
-    $endfor$
+    $endfor$       
 </head>
 
 <body>
