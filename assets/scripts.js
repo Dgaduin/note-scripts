@@ -19,51 +19,15 @@ const fetchMetadata = async() => {
     return data;
 }
 
-class NoteScrollableContainer extends Component {
-    ref = createRef();
+const CustomScrollContainer = (props) =>
+    html `<div  ...${{...props, "data-simplebar": true, "data-simplebar-auto-hide": false}} />`;
 
-    async componentDidMount() {
-        if (this.ref.current) {
-            this.setState({ scroll: new SimpleBar(this.ref.current) })
-        }
-    }
-
-    async componentDidUpdate(nextProps) {
-        scroll.recalculate();
-    }
-
-    render() {
-        return html `
-        <div id="main" data-simplebar data-simplebar-auto-hide="false">
-            <${Note} ...${this.props} />
-        </div>`;
-    }
-}
-
-class SearchScrollableContainer extends Component {
-    ref = createRef();
-
-    async componentDidMount() {
-        if (this.ref.current) {
-            this.setState({ scroll: new SimpleBar(this.ref.current) })
-        }
-    }
-
-    async componentDidUpdate(nextProps) {
-        scroll.recalculate();
-    }
-
-    render() {
-        return html `
-        <div id="main" data-simplebar data-simplebar-auto-hide="false">
-            <${SearchResults} ...${this.props} />
-        </div>`;
-    }
-}
+const CustomScrollContainerUL = (props) =>
+    html `<ul  ...${{...props, "data-simplebar": true, "data-simplebar-auto-hide": false}} />`;
 
 class Note extends Component {
     async setHtml(id) {
-        const html = await fetch(`/${id}.html`).then(res => res.text());
+        const html = await fetch(` /${ id }.html `).then(res => res.text());
         this.setState({ html });
     }
 
@@ -92,8 +56,9 @@ class Note extends Component {
         const internalProps = {
             dangerouslySetInnerHTML: { __html: page }
         };
-        console.log(internalProps);
-        return html `<article ...${internalProps}/>`;
+        return html `<${CustomScrollContainer} id="main">
+                        <article ...${internalProps}/>
+                    <//>`;
     }
 }
 
@@ -118,40 +83,63 @@ class SearchResults extends Component {
     render() {
         const list = this.state.results.map(result => {
             const note = metadata.notes.find(x => x.name == result)
-            return html `
-            <div class="searchResult">
-                <a href="#/note/${result}/${this.props.query}">${note.header}</a>
-            </div>`;
+            return html `<li><a href="#/note/${result}/${this.props.query}">${note.header}</a></li>`;
         });
         return html `
-            <div>
+            <${CustomScrollContainer} id="main">
                 <h1>Search results for "${this.props.query}"</h1>
-                ${list}
-            </div>`
+                <ul id="searchResults">${list}</ul>
+            <//>`
     }
 }
 
-const NotesCollection = ({ metadata }) =>
-    metadata.notes.map(note => {
-        const { name, header } = note;
-        return html ` 
-            <li >
-                <a href="#/note/${name}"> ${header} </a> 
-            </li > `;
-    });
+class Sidebar extends Component {
 
-const Sidebar = ({ metadata }) => {
-    return html `
+    constructor() {
+        super();
+        this.state = { notes: [], filteredNotes: [], filter: "'" };
+    }
+
+    async componentDidMount() {
+        const notes = this.props.metadata.notes;
+        this.setState({ notes, filteredNotes: notes });
+    }
+
+    async componentDidUpdate() {}
+
+    filter = (e) => {
+        let regex = new RegExp(`${e.target.value}`, 'gi');
+        let notes = this.state.notes.filter(x => x.header.match(regex));
+        this.setState({ filteredNotes: notes });
+    }
+
+
+    render() {
+        const { filteredNotes } = this.state;
+
+        const notes = filteredNotes.map(note => {
+            const { name, header } = note;
+            return html ` 
+                <li>
+                    <a href="#/note/${name}">${header}</a> 
+                </li>`;
+        });
+
+        return html `
         <nav id="sidebar">
             <header>
                 <h2>
-                    <a href="/">Notes</a> 
-                </h2> 
+                    <a href="/">Notes</a>                     
+                </h2>                 
+                <input type="text" id="title-search-box" placeholder="Search in note titles" onInput=${this.filter}/>
             </header>
-            <ul data-simplebar >
-                <${NotesCollection}...${{ metadata }}/>
-            </ul> 
+            <${CustomScrollContainer} id="noteList">
+                <ul>
+                    ${notes}
+                </ul>
+            <//>
         </nav> `;
+    }
 }
 
 const Home = () =>
@@ -174,20 +162,19 @@ const App = (metadata) => {
         <${Fragment}>            
             <${Router} ...${routerProps} >
                 <${Home} ...${{ default: true }} /> 
-                <${NoteScrollableContainer} ...${{ path: "/note/:id/:query?" }} />
-                <${SearchScrollableContainer} ...${{ path: "/search/:query" }} />              
+                <${Note} ...${{ path: "/note/:id/:query?" }}/>
+                <${SearchResults} ...${{ path: "/search/:query" }} />              
             <//>     
             <${Sidebar} ...${metadata} />        
         <//>
     `;
 };
 
-fetchIndex()
+let indexPromise = fetchIndex()
     .then(searchIndex => {
         index.import(searchIndex);
     })
-
-fetchMetadata()
+    .then(fetchMetadata)
     .then((data) => {
         metadata = data;
         render(

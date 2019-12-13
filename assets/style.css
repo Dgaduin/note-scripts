@@ -1,6 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Merriweather|Roboto+Mono|Solway&display=swap);
 :root {
-    --bg-color: rgb(214, 192, 170);
+    --bg-color: rgb(248, 246, 245);
     --dark-blue: rgba(0, 99, 163, 1);
     --light-blue: rgba(0, 147, 255, 1);
     --orange: rgba(255, 155, 84, 1);
@@ -8,8 +8,16 @@
     --light-orange: rgba(255, 196, 175, 1);
 }
 
+* {
+    box-sizing: border-box;
+}
+
 html {
     font-size: 16px
+}
+
+body {
+    margin: 0;
 }
 
 a,
@@ -39,6 +47,10 @@ a:visited:after {
     color: var(--redish);
 }
 
+#searchResults li {
+    list-style-type: none;
+}
+
 h1,
 h2,
 h3,
@@ -59,7 +71,7 @@ li {
     line-height: 2.2rem;
 }
 
-li a {
+#sidebar ul li a {
     color: black;
 }
 
@@ -99,16 +111,13 @@ blockquote {
 
 .simplebar-track.simplebar-vertical {
     background-color: var(--bg-color);
+    border-radius: 5px;
 }
 
 .simplebar-track.simplebar-vertical .simplebar-scrollbar::before {
     top: 2px;
     bottom: 2px;
     background: var(--dark-blue);
-}
-
-.searchResult {
-    padding: 10px 5px;
 }
 
 #main,
@@ -118,12 +127,27 @@ blockquote {
 }
 
 #sidebar header {
-    padding: 5px 0 15px 0;
+    padding: 15px 0 15px 0;
+    margin: 0 20px 0 20px;
     border-bottom: 1px solid var(--dark-blue);
 }
 
 #sidebar h2 {
     margin: 0;
+}
+
+#title-search-box {
+    padding: 5px;
+    margin: 10px 0 0 0;
+    height: 2.2rem;
+    width: 100%;
+    color: var(--dark-blue);
+    background: var(--bg-color);
+    border-radius: 3px;
+}
+
+#title-search-box::placeholder {
+    color: var(--dark-blue);
 }
 
 @media (min-width:40em) {
@@ -137,15 +161,17 @@ blockquote {
     #sidebar {
         width: 25%;
         float: left;
+        height: 100vh;
+        padding: 0;
+    }
+    #noteList {
+        height: calc(100vh - 135px);
     }
     #sidebar ul {
-        height: calc(100vh - 101px);
         overflow: auto;
-        padding-left: 25px;
         padding-right: 15px;
         list-style-type: circle;
-    }
-    #sidebar header {
-        height: 40px;
+        padding-left: 40px;
+        margin-top: 10px;
     }
 }
