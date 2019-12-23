@@ -18,6 +18,8 @@ html {
 
 body {
     margin: 0;
+    padding-top: 10px;
+    border-top: solid 4px var(--orange);
 }
 
 a,
@@ -154,18 +156,18 @@ blockquote {
     #main {
         width: 70%;
         float: right;
-        height: calc(100vh - 45px);
+        height: calc(100vh - 15px);
         overflow: auto;
-        padding-bottom: 20px;
+        /* padding-bottom: 20px; */
     }
     #sidebar {
         width: 25%;
         float: left;
-        height: 100vh;
+        height: calc(100vh - 15px);
         padding: 0;
     }
     #noteList {
-        height: calc(100vh - 135px);
+        height: calc(100vh - 125px);
     }
     #sidebar ul {
         overflow: auto;

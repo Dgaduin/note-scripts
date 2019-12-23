@@ -9,25 +9,25 @@ const index = new FlexSearch();
 let metadata;
 
 const fetchIndex = async () => {
-  const url = '/searchIndex.json';
+  const url = 'https://notes-cdn.dgaduin.dev/searchIndex.json';
   const data = await (await fetch(url)).text();
   return data;
 }
 const fetchMetadata = async () => {
-  const url = '/metadata.json';
+  const url = 'https://notes-cdn.dgaduin.dev/metadata.json';
   const data = await (await fetch(url)).json();
   return data;
 }
 
 const CustomScrollContainer = (props) =>
-  html`<div  ...${{ ...props, "data-simplebar": true, "data-simplebar-auto-hide": false }} />`;
+  html`<div  ...${{ ...props, "data-simplebar": true, "data-simplebar-auto-hide": "false" }} />`;
 
 const CustomScrollContainerUL = (props) =>
-  html`<ul  ...${{ ...props, "data-simplebar": true, "data-simplebar-auto-hide": false }} />`;
+  html`<ul  ...${{ ...props, "data-simplebar": true, "data-simplebar-auto-hide": "false" }} />`;
 
 class Note extends Component {
   async setHtml(id) {
-    const html = await fetch(` /${id}.html `).then(res => res.text());
+    const html = await fetch(` https://notes-cdn.dgaduin.dev/notes/${id}.html `).then(res => res.text());
     this.setState({ html });
   }
 
@@ -101,7 +101,7 @@ class Sidebar extends Component {
   }
 
   async componentDidMount() {
-    const notes = this.props.metadata.notes;
+    const notes = this.props.metadata;
     this.setState({ notes, filteredNotes: notes });
   }
 
@@ -118,10 +118,10 @@ class Sidebar extends Component {
     const { filteredNotes } = this.state;
 
     const notes = filteredNotes.map(note => {
-      const { name, title } = note;
+      const { fileName, title } = note;
       return html` 
                 <li>
-                    <a href="#/note/${name}">${title}</a> 
+                    <a href="#/note/${fileName}">${title}</a> 
                 </li>`;
     });
 
