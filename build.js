@@ -3,8 +3,9 @@ const { promisify } = require('util');
 const child = require('child_process');
 const replace = require('replace-in-file');
 const copyfiles = require('copyfiles');
-const rimraf = require("rimraf");
-const FlexSearch = require("flexsearch");
+const rimraf = require('rimraf');
+const FlexSearch = require('flexsearch');
+const fm = require('front-matter');
 
 const readDir = promisify(fs.readdir);
 const createDir = promisify(fs.mkdir);
@@ -17,86 +18,100 @@ const exec = promisify(child.exec);
 const notes = './notes';
 const staging = './staging';
 const assets = './assets';
-const template = './template';
 const dist = './dist';
 
 const replaceOptions = {
-    files: `${staging}/*.md`,
-    from: [
-        /\[\[(.+)\]\] (.+)/g, // match zettle links and converts them to static local links
-        /[^/]#([^\s#]+)/g], // finds tags and points them to a search url for tags
-    to: ['[$2](./#/note/$1)', '[$&](./#/search/$1)'],
-}
-
-const headerRegex = /^#+ (.+)/;
-const findFirstHeader = (fileContent, filename) => {
-    let found = fileContent.match(headerRegex);
-    return found ? found[1] : filename;
+  files: `${staging}/*.md`,
+  from: [
+    /\[\[(.+)\]\] (.+)/g, // match zettle links and converts them to static local links
+    /[^/]#([^\s#]+)/g], // finds tags and points them to a search url for tags
+  to: ['[$2](./#/note/$1)', '[$&](./#/search/$1)'],
 };
 
 const clearAll = async () => Promise.all([
-    deleteDir(dist),
-    deleteDir(staging)
+  (console.log('Clearing directories'), console.log('\tClearing distribution folder'), deleteDir(dist)),
+  (console.log('\tClearing staging folder\n'), deleteDir(staging)),
 ]);
 
 const stage = () => Promise.all([
-    createDir(staging),
-    createDir(dist),
-    copy([`${notes}/*.md`, staging,], true),
+  (console.log('Creating directories'), console.log('\tCreating staging folder'), createDir(staging)),
+  (console.log('\tCreating distribution folder'), createDir(dist)),
+  (console.log('\tCopying notes to staging folder\n'), copy([`${notes}/*.md`, staging], true)),
 ]);
 
-const extractMetadata = async () => {
-    const files = await readDir(staging);
+const readAndExtractMetadata = async () => {
+  console.log('Extracting metadata');
 
-    const notes = await Promise.all(
-        files
-            .reverse()
-            .map(async file => {
-                const filePath = `${staging}/${file}`;
-                return data = readFile(filePath, 'utf8')
-                    .then(data => ({
-                        header: findFirstHeader(data, file.slice(0, -3)),
-                        name: file.slice(0, -3),
-                        link: `/#/note/${file.slice(0, -3)}`,
-                        author: "Atanas Pashkov"
-                    }));
-            }));
-    await writeFile(`${dist}/metadata.json`, JSON.stringify({ notes }));
-    return { notes };
+  const files = await readDir(staging);
+  console.log(`\tFound ${files.length} files`);
+  console.log('\tReading Files');
+
+  const notesCollection = await Promise.all(
+    files
+      .reverse()
+      .map(async (file, i) => {
+        console.log(`\t\tProcessing file ${i + 1} of ${files.length} : ${file}`);
+        const filePath = `${staging}/${file}`;
+
+        return readFile(filePath, 'utf8')
+          .then((data) => {
+            const frontMatter = fm(data);
+            const fileName = file.split('.')[0];
+
+            return {
+              data: {
+                title: fileName,
+                author: 'Atanas Pashkov',
+                fileName,
+                filePath,
+                link: `/#/note/${fileName}`,
+
+                ...frontMatter.attributes,
+              },
+              body: frontMatter.body,
+            };
+          });
+      }),
+  );
+  console.log('\tRead all files');
+  console.log('\tCreating metadata.json file\n');
+  await writeFile(`${dist}/metadata.json`, JSON.stringify(notesCollection.map((x) => x.data)));
+  return notesCollection;
 };
 
-const generateNotes = async (data) => {
-    const commands = data.notes.map(async (note) => {
-        const command = `pandoc ${staging}/${note.name}.md -o ${dist}/${note.name}.html --metadata pagetitle="${note.header}" --metadata author="${note.author}"`;
-        return exec(command);
+const generateNotes = async (notesCollection) => {
+  console.log('Generating html files from markdown');
+  const commands = notesCollection.map(async (note) => {
+    const command = `pandoc ${note.data.filePath} -o ${dist}/notes/${note.data.fileName}.html --metadata pagetitle="${note.data.title}" --metadata author="${note.data.author}"`;
+    return exec(command);
+  });
+
+  await Promise.all(commands);
+  console.log('Finished generating html\n');
+  return notesCollection;
+};
+
+const copyAssets = () => (console.log('Copying assets to distribution\n'), copy([`${assets}/*`, dist], true));
+
+const clearStaging = () => (console.log('Clearing staging folder\n'), deleteDir(staging));
+
+const generateSearchIndex = async (notesCollection) => {
+  console.log('Generating search index');
+  const index = new FlexSearch();
+  notesCollection
+    .forEach((note) => {
+      index.add(note.data.fileName, note.body);
     });
-
-    return await Promise.all(commands);
-}
-
-const copyAssets = () => copy([`${assets}/*`, dist,], true);
-
-const clearStaging = () => deleteDir(staging);
-
-const generateSeachIndex = async () => {
-    const index = new FlexSearch();
-    const files = fs.readdirSync(notes);
-    files
-        .filter(file => file[0] != '.')
-        .forEach(file => {
-            const filePath = `${staging}/${file}`;
-            const text = fs.readFileSync(filePath, 'utf8');
-            index.add(file.slice(0, -3), text);
-        });
-    await writeFile(`${dist}/searchIndex.json`, index.export());
-}
+  await writeFile(`${dist}/searchIndex.json`, index.export());
+  console.log('Finished generating search index\n');
+};
 
 
 clearAll()
-    .then(stage)
-    .then(() => replace(replaceOptions))
-    .then(extractMetadata)
-    .then(generateNotes)
-    .then(generateSeachIndex)
-    .then(copyAssets)
-    .then(clearStaging);
+  .then(stage)
+  .then(() => replace(replaceOptions))
+  .then(readAndExtractMetadata)
+  .then(generateNotes)
+  .then(generateSearchIndex)
+  .then(copyAssets)
+  .then(clearStaging);
